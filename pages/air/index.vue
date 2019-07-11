@@ -1,5 +1,5 @@
 <template>
-  <div>评论</div>
+  <div>机票</div>
 </template>
 <script>
 export default {};
