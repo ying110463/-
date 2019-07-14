@@ -68,7 +68,7 @@ export default {
   methods: {
     handleOption(index) {
       this.currentOption = index;
-    const item = this.options[this.currentOption];
+      const item = this.options[this.currentOption];
       if (index == 2) {
         return this.$router.push(item.pageUrl);
       }
@@ -86,7 +86,7 @@ export default {
   min-width: 1000px;
   margin: 0 auto;
   position: relative;
-  /deep/ .el-carousel__container {
+  no-op .el-carousel__container {
     height: 700px;
   }
   .banner-image {
