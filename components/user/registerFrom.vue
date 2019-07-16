@@ -1,7 +1,7 @@
 <template>
   <el-form :model="form" :rules="rules" ref="form" class="ruleForm-item">
-    <el-form-item prop="phone" class="ruleForm-item">
-      <el-input v-model="form.phone" placeholder="请输入手机号"></el-input>
+    <el-form-item prop="username" class="ruleForm-item">
+      <el-input v-model="form.username" placeholder="请输入手机号"></el-input>
     </el-form-item>
     <el-form-item prop="captcha" class="form-item">
       <el-input v-model="form.captcha" placeholder="验证码">
@@ -11,35 +11,43 @@
       </el-input>
     </el-form-item>
     <el-form-item prop="nickname" class="ruleForm-item">
-      <el-input v-model="form.username" placeholder="你的名字"></el-input>
+      <el-input v-model="form.nickname" placeholder="你的名字"></el-input>
     </el-form-item>
     <el-form-item prop="password" class="ruleForm-item">
       <el-input v-model="form.password" placeholder="密码" type="password"></el-input>
     </el-form-item>
     <el-form-item prop="checkPassword" class="ruleForm-item">
-      <el-input v-model="form.password" placeholder="确定密码" type="password"></el-input>
+      <el-input v-model="form.checkPassword" placeholder="确定密码" type="password"></el-input>
     </el-form-item>
     <el-form-item>
-      <el-button type="primary" class="submit" @click="handleRegSubmit" >注册</el-button>
+      <el-button type="primary" class="submit" @click="handleRegSubmit">注册</el-button>
     </el-form-item>
   </el-form>
 </template>
 <script>
 export default {
   data() {
+    const validatePass = (rule, value, callback) => {
+      if (value === "") {
+        callback(new Error("请再次输入密码"));
+      } else if (value !== this.form.password) {
+        callback(new Error("两次输入密码不一致!"));
+      } else {
+        callback();
+      }
+    };
     return {
       form: {
-        phone: "",
+        username: "",
         captcha: "",
         nickname: "",
         password: "",
         checkPassword: ""
       },
       rules: {
-        phone: [
+        username: [
           {
             required: true,
-            type: "number",
             trigger: "blur",
             message: "请输入手机号"
           }
@@ -55,36 +63,47 @@ export default {
           { required: true, trigger: "blur", message: "请输入你的名字" }
         ],
         password: [{ required: true, trigger: "blur", message: "请输入密码" }],
-        checkPassword: [
-          { required: true, trigger: "blur", message: "请确认密码是否一致" }
-        ]
+        checkPassword: [{ validator: validatePass, trigger: "blur" }]
       }
     };
   },
-  methods:{
+  methods: {
     //   发送验证？
-      handleSendCaptcha(){
-          this.$axios({
-              url:'/captchas',
-              data:this.form.phone
-          })
-
-      },
-    //   注册用？
-      handleRegSubmit(){
-     this.$refs.form.validate(valid=>{
-         if(valid){
-             this.$axios({
-                 url:'/accounts/register',
-                 method:'POST',
-                 data:this.form
-             }).then(res=>{
-                 console.log(res)
-             })
-         }
-     })
+    handleSendCaptcha() {
+      const phoneNumber = this.form.username;
+      console.log(phoneNumber);
+      if (!phoneNumber.trim()) {
+        this.$confirm("手机号码不能为空", "提示", {
+          confirmButtonText: "确定",
+          showCancelButton: false,
+          type: "warning"
+        });
+        return;
       }
-
+      this.$store.dispatch('user/sendCode',phoneNumber).then(res=>{
+        this.$confirm("验证码为:" + `${res}`, "提示", {
+        confirmButtonText: "确定",
+        showCancelButton: false,
+        type: "warning"
+      });
+      })
+    },
+    //   注册用？
+    handleRegSubmit() {
+      this.$refs.form.validate(valid => {
+        if (valid) {
+          const { checkPassword, ...props } = this.form;
+          this.$axios({
+            url: "/accounts/register",
+            method: "POST",
+            data: props
+          }).then(res => {
+            console.log(res);
+            this.$router.push("/");
+          });
+        }
+      });
+    }
   }
 };
 </script>
@@ -93,10 +112,10 @@ export default {
   padding: 5px 20px;
   .form-item {
     padding: 5px 20px;
-    .formtext{
-        font-size: 16px;
-        color: #888;
-        text-align: center;
+    .formtext {
+      font-size: 16px;
+      color: #888;
+      text-align: center;
     }
   }
   .submit {

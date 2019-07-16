@@ -86,7 +86,7 @@ export default {
   min-width: 1000px;
   margin: 0 auto;
   position: relative;
-  no-op .el-carousel__container {
+ /deep/.el-carousel__container {
     height: 700px;
   }
   .banner-image {

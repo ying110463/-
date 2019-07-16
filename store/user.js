@@ -18,6 +18,17 @@ export const mutations = {
   }
 };
 export const actions = {
+  sendCode(store,phoneNumber){
+    return this.$axios({
+      url: "/captchas",
+      data: { tel: phoneNumber },
+      method: "POST"
+    }).then(res => {
+      console.log(res);
+      const{code}=res.data
+      return code
+    });
+  },
   login(store, data) {
     return this.$axios({
       url: "/accounts/login",
