@@ -72,7 +72,7 @@ export default {
   methods: {
     handleSearchTab(ietm, index) {
       this.currentTab = index;
-      if (index===1) {
+      if (index === 1) {
         this.$confirm("目前暂不支持往返，请使用单程选票", "提示", {
           confirmButtonText: "确定",
           showCancelButton: false,
@@ -86,27 +86,12 @@ export default {
     },
     // 到达城市
     queryDestSearch(value, cd) {
-      if (!value.trim()) {
-        cd([]);
-        return;
-      }
-      this.$axios({
-        url: "/airs/city",
-        params: {
-          name: value
+      this.querySearchCity(value).then(arr => {
+        if (arr.length > 0) {
+          this.form.destCity = arr[0].value;
+          this.form.destCode = arr[0].sort;
         }
-      }).then(res => {
-        console.log(res);
-        const { data } = res.data;
-        const newdata = data.map(v => {
-          return {
-            ...v,
-            value: v.name.replace("市", "")
-          };
-        });
-        this.form.destCity = newdata[0].value;
-        this.form.destCode = newdata[0].sort;
-        cd(newdata);
+        cd(arr);
       });
     },
     handleDestSelect(item) {
@@ -115,27 +100,12 @@ export default {
     },
     // 出发城市
     querySearchAsync(value, cd) {
-      if (!value.trim()) {
-        cd([]);
-        return;
-      }
-      this.$axios({
-        url: "/airs/city",
-        params: {
-          name: value
+      this.querySearchCity(value).then(arr => {
+        if (arr.length > 0) {
+          this.form.departCity = arr[0].value;
+          this.form.departCode = arr[0].sort;
         }
-      }).then(res => {
-        console.log(res);
-        const { data } = res.data;
-        const newdata = data.map(v => {
-          return {
-            ...v,
-            value: v.name.replace("市", "")
-          };
-        });
-        this.form.departCity = newdata[0].value;
-        this.form.departCode = newdata[0].sort;
-        cd(newdata);
+        cd(arr);
       });
     },
     handleDate(value) {
@@ -149,13 +119,67 @@ export default {
       this.form.destCode = departCode;
     },
     handleSubmit() {
-      this.$router.push({
-        path: "/air/flights",
-        query: this.form
+      const rules = {
+        departCity: {
+          value: this.form.departCity,
+          message: "请选择出发城市"
+        },
+        destCity: {
+          value: this.form.destCity,
+          message: "请选择到达城市"
+        },
+        departDate: {
+          value: this.form.departDate,
+          message: "请选择出发日期"
+        }
+      };
+
+      // 验证结果，初始值是true
+      let valid = true;
+
+      Object.keys(rules).forEach(v => {
+        // 如果有一次验证不通过的，直接返回
+        if (!valid) return;
+
+        // 如果字段的值为空
+        if (!rules[v].value) {
+          valid = false;
+          this.$message.warning(rules[v].message);
+          return false;
+        }
       });
+      if (valid) {
+        this.$router.push({
+          path: "/air/flights",
+          query: this.form
+        });
+      }
     },
     // 封装城市搜索
-    handstes(value, cd) {}
+    querySearchCity(queryString) {
+      return new Promise((resolve, reject) => {
+        if (!queryString.trim()) {
+          resolve([]);
+          return;
+        }
+        this.$axios({
+          url: "/airs/city",
+          params: {
+            name: queryString
+          }
+        }).then(res => {
+          console.log(res);
+          const { data } = res.data;
+          const newdata = data.map(v => {
+            return {
+              ...v,
+              value: v.name.replace("市", "")
+            };
+          });
+          resolve(newdata);
+        });
+      });
+    }
   }
 };
 </script>

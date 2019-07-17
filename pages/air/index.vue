@@ -45,7 +45,7 @@
             <img :src="item.cover" />
             <el-row class="layer-bar" type="flex" justify="space-between">
               <span>{{item.departCity}}-{{item.destCity}}</span>
-              <span>{{item.price}}</span>
+              <span>￥{{Number(item.price).toFixed(2)}}</span>
             </el-row>
           </nuxt-link>
         </el-col>
