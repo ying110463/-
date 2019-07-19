@@ -154,6 +154,12 @@ export default {
           query: this.form
         });
       }
+      const airs=JSON.parse(localStorage.getItem('airs')||'[]')
+       airs.unshift(this.form)
+       if(airs.length>5){
+         airs=airs.pop()
+       }
+       localStorage.setItem('airs',JSON.stringify(airs))
     },
     // 封装城市搜索
     querySearchCity(queryString) {

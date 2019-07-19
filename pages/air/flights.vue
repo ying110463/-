@@ -4,7 +4,7 @@
       <!-- 顶部过滤列表 -->
       <div class="flights-content">
         <!-- 过滤条件 -->
-        <div></div>
+        <FlightsFilters :data="cacheFlightsData" @changeDataList="changeDataList" />
 
         <!-- 航班头部布局 -->
         <FlightsListHead />
@@ -44,11 +44,15 @@
 
         <div class="history">
           <h5>历史查询</h5>
-          <nuxt-link to="#">
+          <nuxt-link
+            :to="`/air/flights?departCity=${item.departCity}&departCode=${item.departCode}&destCity=${item.destCity}&destCode=${item.destCode}&departDate=${item.departDate}`"
+            v-for="(item,index) in history"
+            :key="index"
+          >
             <el-row type="flex" justify="space-between" align="middle" class="history-item">
               <div class="air-info">
-                <div class="to-from">广州 - 上海</div>
-                <p>2019-06-16</p>
+                <div class="to-from">{{item.departCity}} - {{item.destCity}}</div>
+                <p>{{item.departDate}}</p>
               </div>
               <span>选择</span>
             </el-row>
@@ -62,50 +66,73 @@
 <script>
 import FlightsListHead from "@/components/air/flightsListHead.vue";
 import FlightsItem from "@/components/air/flightsItem.vue";
+import FlightsFilters from "@/components/air/flightsFilters.vue";
 export default {
   data() {
     return {
       flightsData: {
-        flights: []
+        flights: [],
+        info: {},
+        options: {}
       },
-      dataList: [],
+      cacheFlightsData: {
+        flights: [],
+        info: {},
+        options: {}
+      },
+      // dataList: [],
       pageIndex: 1,
       pageSize: 2,
-      total: 5
+      total: 5,
+      history: []
     };
   },
   components: {
     FlightsListHead,
-    FlightsItem
+    FlightsItem,
+    FlightsFilters
   },
-  methods: {
-    handleSizeChange(value) {
-      console.log(222);
-      this.pageSize = value;
-      this.setDataList();
-    },
-    handleCurrentChange(value) {
-      console.log(666);
-      this.pageIndex = value;
-      this.setDataList();
-    },
-    setDataList() {
-      this.dataList = this.flightsData.flights.slice(
+  computed: {
+    dataList() {
+      return this.flightsData.flights.slice(
         (this.pageIndex - 1) * this.pageSize,
         this.pageSize * this.pageIndex
       );
     }
   },
+  beforeRouteUpdate(to, from, next) {
+    next();
+    this.gopaget();
+  },
+  methods: {
+    handleSizeChange(value) {
+      this.pageSize = value;
+      // this.setDataList();
+    },
+    handleCurrentChange(value) {
+      this.pageIndex = value;
+      // this.setDataList();
+    },
+    // setDataList() {}
+    changeDataList(arr) {
+      this.flightsData.flights = arr;
+    },
+    gopaget() {
+      this.$axios({
+        url: "/airs",
+        params: this.$route.query
+      }).then(res => {
+        console.log(res);
+        this.flightsData = res.data;
+        this.cacheFlightsData = { ...res.data };
+        this.total = this.flightsData.flights.length;
+        // this.dataList = this.flightsData.flights.slice(0, this.pageSize);
+      });
+      this.history = JSON.parse(localStorage.getItem("airs") || `[]`);
+    }
+  },
   mounted() {
-    this.$axios({
-      url: "/airs",
-      params: this.$route.query
-    }).then(res => {
-      console.log(res);
-      this.flightsData = res.data;
-      this.total = this.flightsData.flights.length;
-      this.dataList = this.flightsData.flights.slice(0, this.pageSize);
-    });
+    this.gopaget();
   }
 };
 </script>
