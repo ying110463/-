@@ -91,7 +91,7 @@ export default {
 
       const arr = this.data.flights.filter(v => {
         const [start] = v.dep_time.split(":");
-        return from <= start&&start > to;
+        return +from <= start-0&& +start < +to;
       });
       this.$emit("changeDataList", arr);
     },

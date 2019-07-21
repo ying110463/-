@@ -82,7 +82,7 @@ export default {
       },
       // dataList: [],
       pageIndex: 1,
-      pageSize: 2,
+      pageSize: 4,
       total: 5,
       history: []
     };
@@ -116,6 +116,8 @@ export default {
     // setDataList() {}
     changeDataList(arr) {
       this.flightsData.flights = arr;
+      this.total=this.flightsData.flights.length;
+      this.pageIndex=1
     },
     gopaget() {
       this.$axios({
